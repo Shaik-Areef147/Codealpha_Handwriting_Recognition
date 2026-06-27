@@ -4,3 +4,6 @@ gunicorn==22.0.0
 numpy==1.26.4
 pillow==10.4.0
 tensorflow-cpu==2.16.1
+stremlit
+pandas
+scikit-learn
