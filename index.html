@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Handwriting Recognizer — AI-Powered</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Animated background orbs -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+
+  <!-- ───────── Header ───────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">✍</span>
+        <span class="logo-text">WriteAI</span>
+      </div>
+      <nav class="header-badges">
+        <span class="badge badge-green">CNN Model</span>
+        <span class="badge badge-blue">MNIST Trained</span>
+        <span class="badge badge-purple">~99% Accuracy</span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ───────── Hero ───────── -->
+  <section class="hero">
+    <h1 class="hero-title">
+      Handwritten Digit<br />
+      <span class="gradient-text">Recognition</span>
+    </h1>
+    <p class="hero-sub">
+      Draw any digit 0–9 on the canvas. Our CNN reads your handwriting in real time.
+    </p>
+  </section>
+
+  <!-- ───────── Main App ───────── -->
+  <main class="app-grid">
+
+    <!-- LEFT: Canvas panel -->
+    <div class="panel canvas-panel">
+      <div class="panel-header">
+        <span class="panel-dot dot-red"></span>
+        <span class="panel-dot dot-yellow"></span>
+        <span class="panel-dot dot-green"></span>
+        <span class="panel-title">Drawing Canvas</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="drawCanvas" width="320" height="320"
+                aria-label="Drawing canvas — draw a digit here"></canvas>
+        <div class="canvas-hint" id="canvasHint">Draw a digit here →</div>
+      </div>
+
+      <div class="brush-row">
+        <label class="brush-label">Brush size</label>
+        <input type="range" id="brushSize" min="8" max="32" value="18"
+               aria-label="Brush size" />
+        <span class="brush-val" id="brushVal">18</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="undoBtn" title="Undo last stroke">
+          ↩ Undo
+        </button>
+        <button class="btn btn-danger" id="clearBtn">
+          ✕ Clear
+        </button>
+        <button class="btn btn-primary" id="predictBtn">
+          ⚡ Recognize
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results panel -->
+    <div class="panel result-panel">
+      <div class="panel-header">
+        <span class="panel-dot dot-red"></span>
+        <span class="panel-dot dot-yellow"></span>
+        <span class="panel-dot dot-green"></span>
+        <span class="panel-title">AI Prediction</span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🤖</div>
+        <p>Draw a digit and click<br /><strong>Recognize</strong> to see the result</p>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state hidden" id="loadingState">
+        <div class="neural-loader">
+          <div class="node n1"></div>
+          <div class="node n2"></div>
+          <div class="node n3"></div>
+          <div class="node n4"></div>
+          <div class="node n5"></div>
+        </div>
+        <p class="loading-text">Analyzing your handwriting…</p>
+      </div>
+
+      <!-- Result -->
+      <div class="result-state hidden" id="resultState">
+
+        <!-- Big digit display -->
+        <div class="big-digit-wrap">
+          <div class="big-digit-label">Recognized as</div>
+          <div class="big-digit" id="bigDigit">?</div>
+          <div class="conf-pill" id="confPill">0%</div>
+        </div>
+
+        <!-- Confidence bar -->
+        <div class="conf-section">
+          <div class="conf-header">
+            <span>Confidence</span>
+            <span id="confPct">0%</span>
+          </div>
+          <div class="conf-track">
+            <div class="conf-fill" id="confFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Top 3 breakdown -->
+        <div class="top3-section">
+          <div class="top3-title">Top predictions</div>
+          <div id="top3List"></div>
+        </div>
+
+        <!-- Probability grid (all 10 digits) -->
+        <div class="grid-section">
+          <div class="grid-title">All digit probabilities</div>
+          <div class="digit-grid" id="digitGrid"></div>
+        </div>
+
+      </div>
+
+      <!-- Error state -->
+      <div class="error-state hidden" id="errorState">
+        <div class="error-icon">⚠️</div>
+        <p id="errorMsg">Something went wrong. Try again.</p>
+        <button class="btn btn-secondary" id="retryBtn">Retry</button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ───────── How it works section ───────── -->
+  <section class="how-section">
+    <h2 class="section-title">How it works</h2>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon">🖊️</div>
+        <h3>You draw</h3>
+        <p>Your digit is captured from the HTML5 canvas as a 320×320 PNG image.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-icon">🔬</div>
+        <h3>Preprocessing</h3>
+        <p>Flask resizes the image to 28×28 pixels, normalizes pixel values, and handles color inversion.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon">🧠</div>
+        <h3>CNN inference</h3>
+        <p>A 3-block Convolutional Neural Network trained on 60,000 MNIST samples predicts the digit.</p>
+      </div>
+      <div class="how-card">
+        <div class="how-num">04</div>
+        <div class="how-icon">📊</div>
+        <h3>Confidence scores</h3>
+        <p>Softmax outputs per digit are shown as a probability bar chart for full transparency.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── Footer ───────── -->
+  <footer class="site-footer">
+    <p>Built with TensorFlow · Flask · Deployed on Render</p>
+  </footer>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
